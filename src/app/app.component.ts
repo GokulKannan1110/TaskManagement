@@ -7,7 +7,7 @@ import { AuthService } from './Services/auth.service';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit{
-  title = 'AngularAuthentication';
+  title = 'TaskManagement';
   authService: AuthService = inject(AuthService);
 
   ngOnInit(){

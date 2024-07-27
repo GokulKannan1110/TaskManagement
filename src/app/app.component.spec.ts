@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'AngularAuthentication'`, () => {
+  it(`should have as title 'TaskManagement'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('AngularAuthentication');
+    expect(app.title).toEqual('TaskManagement');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, AngularAuthentication');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, TaskManagement');
   });
 });
