@@ -1,4 +1,4 @@
-<app-create-task *ngIf="showCreateTaskForm" (CloseForm)="CloseCreateTaskForm()" (EmitTaskData)="CreateTask($event)"
+<app-create-task *ngIf="showCreateTaskForm" (CloseForm)="CloseCreateTaskForm($event)" (EmitTaskData)="CreateTask($event)"
     [isEditMode]="isEditMode" [selectedTask]="selectedTask"></app-create-task>
 <app-task-details *ngIf="showDetails" [taskId]="taskId" (detailClose)="CloseDetailsPopUp()"></app-task-details>
 <div class="dashboard-container">

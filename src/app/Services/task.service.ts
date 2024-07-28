@@ -5,6 +5,9 @@ import { catchError, exhaustMap, map, Observable, Subject, Subscription, take, t
 import { LoggingService } from "./Logging.service";
 import { ErrorLog } from "../Model/ErrorLog";
 import { AuthService } from "./auth.service";
+import { User } from "../Model/User";
+//import { v4 as uuid} from "uuid";
+import { nanoid } from "nanoid";
 
 @Injectable({
     providedIn: "root"
@@ -19,18 +22,62 @@ export class TaskService {
     authService: AuthService = inject(AuthService);
 
     CreateTask(task: Task) : Observable<any>{
+        const loggedUser = this.getLoggedUser();
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
+
+            return throwError(() => errorResponse);
+        }
+        
+        const userId = loggedUser.id;
+        task.userId = userId;
+
+        // const taskId = nanoid();
+        // task.id = taskId;
         const headers = new HttpHeaders({ 'my-header': 'Hello World' })
-        return this.http.post<{ name: string }>('https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task.json',
+        return this.http.post<any>('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '.json',
             task, { headers: headers });
+        
     }
 
     UpdateTask(id: string | undefined, data: Task ): Observable<any>{
-       return this.http.put('https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task/' + id+'.json', data)
+        const loggedUser = this.getLoggedUser();
+        
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
+
+            return throwError(() => errorResponse);
+        }
+
+        const userId = loggedUser.id;
+        data.userId = userId;
+        return this.http.put('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '/'+ id + '.json', data)
         
     }
 
     DeleteTask(id: string | undefined) : Observable<any> {
-        return this.http.delete("https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task/" + id + '.json',{observe: 'events'})
+        const loggedUser = this.getLoggedUser();
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
+
+            return throwError(() => errorResponse);
+        }
+        
+        const userId = loggedUser.id;
+        
+        return this.http.delete('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '/' + id + '.json',{observe: 'events'})
             .pipe(tap((event) => {
                 console.log(event);
                 if(event.type === HttpEventType.Response){
@@ -40,7 +87,20 @@ export class TaskService {
     }
 
     DeleteAllTasks() {
-        this.http.delete('https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task.json')
+        const loggedUser = this.getLoggedUser();
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
+
+            this.errorSubject.next(errorResponse);
+        }
+        
+        const userId = loggedUser!.id;
+
+        this.http.delete('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '.json')
             .subscribe({
                 next: (res) => {
                     console.log(res);
@@ -50,8 +110,20 @@ export class TaskService {
     }
 
     FetchAllTasks(): Observable<Task[]> {
+        const loggedUser = this.getLoggedUser();
+        
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
 
-        return this.http.get<{ [key: string]: Task }>('https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task.json')
+            return throwError(() => errorResponse);
+        }
+
+        const userId = loggedUser.id;
+        return this.http.get<{ [key: string]: Task }>('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '.json')
         .pipe(map((response) => {
             console.log(response);
             //Transforming Data
@@ -61,6 +133,7 @@ export class TaskService {
                     tasks.push({ ...response[key], id: key });
                 }
             }
+            console.log(tasks);
             return tasks;
         }),catchError((err: HttpErrorResponse) => {
             //Logging the error to DB
@@ -81,12 +154,35 @@ export class TaskService {
     }
 
     FetchSpecificTask(id: string | undefined){
-       return this.http.get('https://angularhttpclient-9e62b-default-rtdb.firebaseio.com/task/' +id+'.json')
-       .pipe(map((response) => {
+        const loggedUser = this.getLoggedUser();
+        if(!loggedUser)
+        {
+            const errorResponse = new HttpErrorResponse({
+                status: 401,
+                statusText: 'Unauthorized'
+            })
+
+            this.errorSubject.next(errorResponse);
+        }
+        
+        const userId = loggedUser!.id;
+
+        return this.http.get('https://taskmanagement-9d0c2-default-rtdb.firebaseio.com/tasks/' + userId + '/' + id +'.json')
+        .pipe(map((response) => {
         let task = {};
         task = {...response, id: id};
 
         return task;
-       }));       
+        }));       
+    }
+
+    private getLoggedUser(): User | null{
+        const user =  (localStorage.getItem('user') != null) ? JSON.parse(localStorage!.getItem('user')!) : null;        
+        if(!user)
+        {
+            return null;
+        }
+        const loggedUser = new User(user.email, user.id, user._token, user._expiresIn);
+        return loggedUser;
     }
 }

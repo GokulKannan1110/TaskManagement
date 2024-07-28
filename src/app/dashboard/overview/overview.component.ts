@@ -34,6 +34,7 @@ export class OverviewComponent implements OnInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
+    console.log('ngDestroy called');
     this.errorSub.unsubscribe();
   }
 
@@ -44,11 +45,15 @@ export class OverviewComponent implements OnInit, OnDestroy{
   FetchTasksClick() {
     this.FetchAllTasks();
   }
-  CloseCreateTaskForm() {
-    this.showCreateTaskForm = false;
+  CloseCreateTaskForm(value: boolean) {
+    this.showCreateTaskForm = value;
+    console.log('CreateTaskClose emitted');
+    this.FetchAllTasks();
   }
   CloseDetailsPopUp(){
     this.showDetails = false;
+    console.log('detailClose emitted');
+    this.FetchAllTasks();
   }
   CreateTask(data: Task) {
     // console.log('Emitted Value: ');

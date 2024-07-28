@@ -28,7 +28,8 @@ export class CreateTaskComponent implements AfterViewInit{
   }
 
   OnCloseForm(){
-    this.CloseForm.emit(false);
+    console.log('CreateTaskClose emitted');
+    this.CloseForm.emit(false);    
   }
 
   FormSubmitted(form: NgForm)

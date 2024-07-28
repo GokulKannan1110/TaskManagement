@@ -1,3 +1,3 @@
 export const environment = {
-    firebaseAPIKey: "AIzaSyCXPdxAG93BCI-_NhUQSv52NsgqhzfpezA"
+    firebaseAPIKey: "AIzaSyA4D7VyTyYQieCN2-X-AxGfRmpyR1Y2FLA"
 };
